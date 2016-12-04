@@ -1,0 +1,27 @@
+python -m venv myvenv
+myvenv\Scripts\activate <-----------always run to initiate virtual environment
+#(myvenv) prescript now present!!
+
+pip install --upgrade pip
+pip install django~=1.10.....?
+pip install -U Django
+
+django-admin.py startproject mysite .
+manage.py (can start web server)
+settings.py (website configs)
+urls.py (list of patterns used by urlresolver)
+
+python manage.py migrate
+python manage.py runserver
+python manage.py runserver 0:8000   #windows alternative
+http://127.0.0.1:8000/   #navigate here
+
+
+python manage.py startapp myapp
+
+
+
+Change your models (in models.py).
+Run python manage.py makemigrations to create migrations for those changes
+Run python manage.py migrate to apply those changes to the database.
+

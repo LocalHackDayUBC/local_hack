@@ -16,6 +16,54 @@ course_pattern3 = re.compile (course_regex3)
 
 courses = soup.find_all('a', text=course_pattern)
 
+class Node:
+    def __init__(self,name, prereqGroup):
+        self.name = name
+        self.prereqGroup = prereqGroup
+
+class HashTable:
+
+    table = [None] * 256
+    def __init__(self):
+        table = [None] * 256
+        
+    def get_value(self, key):
+        total = 0
+        for i in range(len(key)):
+            total += ord(key[i]) * (7**i)
+        return (len(key) * total) % 256
+
+    def insert(self, key, value):
+        key = self.get_value(key)
+        if  self.table[key] == None:
+            self.table[key] = value
+        
+    
+
+    def delete(self, key):
+        val = self.get_value(key)
+        if self.table[val] != None:
+            if type(self.table[val]) == list:
+                i = self.table[val].index(key)
+                self.table[val][i] = None
+            else:
+                self.table[val] = None
+        else:
+            KeyError()
+
+    def lookup(self, key):
+        found = False
+        val = self.get_value(key)
+        if type(self.table[val]) == list:
+            found = key in self.table[val]
+        else:
+            found = self.table[val] == key
+        return found
+
+state = HashTable()
+state.insert("CPSC221", True)
+state.insert("CPSC110", True)
+state.insert("CPSC121", True)
 #for link in courses:
 #    print(link.get_text())
 
@@ -37,6 +85,7 @@ ONEOF = 5
 
 keywords = ['and', 'or1', 'or2', 'cc', 'allof', 'oneof']
 
+
 class PrerequisiteGroup:
     list_of_course_groups = []
     list_of_operations = []
@@ -54,6 +103,26 @@ class PrerequisiteGroup:
         while(i<len(self.list_of_operations)):
             print(" " + keywords[self.list_of_operations[i]])
             i+=1
+    def evaluate(self):
+        list_of_reduced_vals = []
+        for group in self.list_of_course_groups:
+            list_of_reduced_vals.append(group.evaluate())
+        i = len(self.list_of_operations) - 1
+        j = len(self.list_of_reduced_vals) - 1
+        rsf = list_of_reduced_vals[j]
+        j-=1
+        rsf_temp = True
+        while(i>=0):
+            if(self.list_of_operations[i] == AND):
+                rsf = rsf and list_of_reduced_vals[j]
+                j-=1
+            if(self.list_of_operations[i] == OR1):
+                rsf = rsf or rsf_temp
+                j-=1
+            if(self.list_of_operations[i] == OR2):
+                rsf_temp = rsf
+            i-=1
+
 
 class CourseGroup:
     quantifier = CC
@@ -67,6 +136,20 @@ class CourseGroup:
     def print(self):
         for c in self.list_of_courses:
             print(c + " ")
+    def evaluate(self):
+        for c in self.list_of_courses:
+            if(quantifier == CC):
+                return state.get(self.list_of_courses[0])
+            if(quantifier == ALLOF):
+                rsf = True
+                for c in self.list_of_courses:
+                    rsf = state.get(c) and rsf
+                return rsf
+            if(quantifier == ONEOF):
+                rsf = True
+                for c in self.list_of_courses:
+                    rsf = state.get(c) or rsf
+                return rsf
 
 for link in courses:
     if(link.get_text()==targetCourse):
